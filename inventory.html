@@ -1,0 +1,2364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventory Management System</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+    <style>
+        /* General Body & Font Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            color: #333;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Base style for all pages, no centering applied here */
+        .page-container {
+            width: 100%;
+        }
+
+        /* --- NEW CLASS: Dedicated to centering the login page --- */
+        .login-page-container {
+            width: 100%;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Login Page Styles */
+        .login-container {
+            background: #e0e0e0;
+            padding: 20px;
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+            box-sizing: border-box;
+        }
+
+        .login-box h2 {
+            margin-bottom: 20px;
+            color: #007bff;
+        }
+        
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+        .timestamp-display {
+            margin-bottom: 20px;
+            color: #555;
+            text-align: right;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        /* New class for centering the login button */
+        .login-button-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        /* Specific style for the login timestamp container */
+        .login-timestamp-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            margin-bottom: 20px;
+            color: #555;
+            font-size: 14px;
+            line-height: 1.2;
+        }
+
+        /* Header Styles */
+        header {
+            background-color: #007bff;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            position: relative; /* Add relative positioning for absolute child */
+        }
+        
+        header h1 {
+            margin: 0 auto; /* Center the heading horizontally */
+            font-size: 1.5rem;
+            text-align: center;
+            flex-grow: 1; /* Allow heading to take up available space for centering */
+        }
+
+        /* Adjusted header controls for spacing */
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s, opacity 0.3s;
+            font-weight: bold;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+
+        .btn:disabled {
+            background-color: #6c757d;
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn:focus {
+            outline: 2px solid #0056b3;
+            outline-offset: 2px;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-secondary:hover {
+            background-color: #5a6268;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+
+        .btn-info {
+            background-color: #17a2b8;
+        }
+        .btn-info:hover {
+            background-color: #138496;
+        }
+
+        .btn-success {
+            background-color: #28a745;
+        }
+        .btn-success:hover {
+            background-color: #218838;
+        }
+
+        .btn-sm {
+            padding: 5px 8px;
+            font-size: 12px;
+            margin-right: 5px;
+            white-space: nowrap; /* Prevent buttons from breaking within the action cell */
+        }
+        
+        .table-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            justify-content: flex-start;
+        }
+
+        /* Admin button made "invincible" and now on the far left */
+        .invincible-admin-btn {
+            width: 40px;
+            height: 40px;
+            background-color: transparent;
+            border-radius: 50%;
+            border: none;
+            padding: 0;
+            cursor: pointer;
+            box-shadow: none;
+            flex-shrink: 0;
+            transition: background-color 0.3s;
+            position: absolute;
+            left: 2rem; /* Position on the far left */
+        }
+
+        .invincible-admin-btn:hover {
+            /* Subtle hover effect to indicate it's clickable */
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .action-toggle-btn {
+            font-size: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            color: gold;
+        }
+
+        .btn-icon {
+            background-color: transparent;
+            border: none;
+            color: #007bff;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0;
+            line-height: 1;
+            transition: transform 0.3s;
+        }
+        .btn-icon:hover {
+            transform: translateX(5px);
+        }
+
+        .action-buttons {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        /* Data View & Table Styles */
+        .data-view-container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        #searchInput {
+            flex-grow: 1;
+            max-width: 400px;
+            padding: 10px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        .search-container {
+            display: flex;
+            align-items: center;
+            flex-grow: 1;
+            gap: 10px;
+        }
+
+        #totalItems {
+            margin: 0;
+            white-space: nowrap;
+        }
+
+        .visually-hidden {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            border: 0;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            table-layout: auto;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 12px 15px;
+            text-align: left;
+            white-space: nowrap;
+            vertical-align: top;
+        }
+        
+        .dpm-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            table-layout: fixed;
+        }
+
+        .dpm-table th, .dpm-table td {
+            padding: 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+            white-space: normal;
+            word-wrap: break-word;
+        }
+
+        .dpm-table th {
+            background-color: #f0f0f0;
+        }
+        
+        th {
+            background-color: #e9ecef;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+
+        tr:hover {
+            background-color: #e2e6ea;
+        }
+
+        /* Pagination Styles */
+        .pagination-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .pagination-controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .pagination-label {
+            font-weight: bold;
+            text-align: center;
+            margin: 0;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            max-width: 90%;
+            width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-lg .modal-content {
+            width: 90%;
+            max-width: 900px;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            border-bottom: 2px solid #007bff;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+            font-size: 14px;
+        }
+
+        .error-message {
+            color: #dc3545;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        /* DPM Modal Styles */
+        .dpm-controls {
+            display: flex;
+            align-items: flex-end;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .dpm-controls .form-group {
+            flex-grow: 1;
+            margin-bottom: 0;
+        }
+
+        .dpm-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+        /* Utility Classes */
+        .scrollable-list {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .scrollable-list ul {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .scrollable-list li:last-child {
+            border-bottom: none;
+        }
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            header {
+                flex-direction: column;
+                text-align: center;
+                padding: 1rem;
+                justify-content: center; /* Center main items */
+            }
+
+            header h1 {
+                order: 1; /* Ensure the h1 is first in the flex order */
+                flex-grow: 0; /* Don't grow to fill space on mobile */
+            }
+
+            .header-controls {
+                width: 100%;
+                justify-content: center;
+                margin-top: 10px;
+                order: 2;
+            }
+            
+            .invincible-admin-btn {
+                width: 1.5rem;
+                height: 1.5rem;
+                position: absolute; /* Keep it positioned relative to the header */
+                left: 1rem;
+                top: 1.25rem; /* Adjust position to align with h1 */
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn, .btn-secondary, .btn-danger, .btn-info {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+
+            .table-header-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            #searchInput {
+                width: 100%;
+            }
+            
+            .search-container {
+                width: 100%;
+            }
+
+            #totalItems {
+                width: 100%;
+                text-align: center;
+            }
+            .modal-content, .modal-lg .modal-content {
+                width: 95%;
+                max-width: none;
+                padding: 15px;
+            }
+            .form-group input, .form-group textarea {
+                font-size: 16px;
+            }
+            .modal-actions {
+                flex-direction: column;
+                gap: 5px;
+            }
+            .dpm-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .dpm-controls button {
+                width: 100%;
+            }
+            .dpm-table th, .dpm-table td {
+                padding: 6px;
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <input type="file" id="importFileInput" accept=".json" style="display: none;">
+
+    <div id="login-page" class="login-page-container">
+        <div class="login-container">
+            <div class="login-box">
+                <h2>Inventory Management System</h2>
+                <div id="loginTimestamp" class="login-timestamp-container"></div>
+                <form id="loginForm" autocomplete="off">
+                    <div class="input-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" required>
+                    </div>
+                    <div class="input-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" required>
+                    </div>
+                    <div class="login-button-container">
+                        <button type="submit" class="btn">Login</button>
+                    </div>
+                    <p id="login-error" class="error-message"></p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div id="inventory-page" class="page-container" style="display: none;">
+        <header>
+            <button class="invincible-admin-btn" title="Admin Options"></button>
+            <h1>Inventory Dashboard</h1>
+            <div class="header-controls">
+                <button id="logoutBtn" class="btn btn-danger">Log Out</button>
+            </div>
+        </header>
+
+        <main class="container">
+            <div class="action-buttons" id="actionButtons" style="display: none;">
+                <button id="registerBtn" class="btn">Register New Item</button>
+                <button id="viewListBtn" class="btn">View Full List</button>
+                <button id="dpmBtn" class="btn">Daily Product Movement</button>
+                <button id="dispenseListBtn" class="btn">Item for Replacement</button>
+                <button id="expirationBtn" class="btn btn-danger">Item Expiration</button>
+                <button id="exportBtnText" class="btn btn-secondary">Export (Copy Text)</button>
+                <button id="exportBtnFile" class="btn btn-info">Export (File)</button>
+                <button id="importBtnText" class="btn btn-secondary">Import (Paste Text)</button>
+                <button id="importBtnFile" class="btn btn-info">Import (File)</button>
+            </div>
+
+            <div class="data-view-container">
+                <div class="table-header-controls">
+                    <div class="search-container">
+                        <input type="text" id="searchInput" placeholder="Search by item name...">
+                        <button class="action-toggle-btn" id="toggleActionsBtn" title="Toggle Action Buttons">&#9670;</button>
+                    </div>
+                    <h3 id="totalItems">Total Items: 0</h3>
+                </div>
+
+                <div id="timestamp" class="timestamp-display"></div>
+                
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Quantity</th>
+                                <th>Unit Price</th>
+                                <th>Expiration Date</th>
+                                <th>Date of Registration</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination-container">
+                    <div class="pagination-controls">
+                        <button id="prevPageBtn" class="btn">Previous</button>
+                        <button id="nextPageBtn" class="btn">Next</button>
+                    </div>
+                    <span id="pageInfo" class="pagination-label">Page 1 of 1</span>
+                </div>
+            </div>
+        </main>
+        
+        <div id="itemModal" class="modal">
+            <div class="modal-content">
+                <h2 id="modalTitle">Register New Item</h2>
+                <form id="itemForm">
+                    <input type="hidden" id="itemId">
+                    <div class="form-group">
+                        <label for="itemName">Item Name</label>
+                        <input type="text" id="itemName" maxlength="100" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="quantity">Quantity</label>
+                        <input type="number" id="quantity" min="0" max="999999" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="unitPrice">Unit Price (₱)</label>
+                        <input type="number" id="unitPrice" min="0" max="999999" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="expirationDate">Expiration Date</label>
+                        <input type="date" id="expirationDate">
+                    </div>
+                    <div class="form-group">
+                        <label for="registrationDate">Date of Registration</label>
+                        <input type="date" id="registrationDate" required>
+                    </div>
+                    <p id="item-form-error" class="error-message"></p>
+                    <div class="modal-actions">
+                        <button type="submit" id="saveBtn" class="btn">Save</button>
+                        <button type="button" class="btn btn-secondary cancel-btn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="viewListModal" class="modal">
+            <div class="modal-content modal-lg">
+                <h2>Full Item List</h2>
+                <div id="fullItemList" class="scrollable-list"></div>
+
+                <div class="pagination-container">
+                    <div class="pagination-controls">
+                        <button id="fullListPrevBtn" class="btn btn-sm">Previous</button>
+                        <button id="fullListNextBtn" class="btn btn-sm">Next</button>
+                    </div>
+                    <span id="fullListPageInfo" class="pagination-label">Page 1 of 1</span>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" id="downloadFullListPdfBtn" class="btn btn-info">Download PDF</button>
+                    <button type="button" id="copyFullListPdfBtn" class="btn btn-secondary">Copy PDF</button>
+                    <button type="button" class="btn btn-secondary cancel-btn">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="dispenseListModal" class="modal">
+            <div class="modal-content modal-lg">
+                <h2>Item for Replacement</h2>
+                
+                <div class="form-group">
+                    <input type="text" id="dispenseListSearchInput" placeholder="Search replacement items...">
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Last Dispense Date</th>
+                                <th>Last Dispense Time</th>
+                                <th>Quantity Dispensed</th>
+                                <th>Remaining Quantity</th>
+                            </tr>
+                        </thead>
+                        <tbody id="dispenseListBody"></tbody>
+                    </table>
+                </div>
+                
+                <div class="pagination-container" id="dispenseListPaginationContainer">
+                    <div class="pagination-controls">
+                        <button id="dispenseListPrevBtn" class="btn btn-sm">Previous</button>
+                        <button id="dispenseListNextBtn" class="btn btn-sm">Next</button>
+                    </div>
+                    <span id="dispenseListPageInfo" class="pagination-label">Page 1 of 1</span>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" id="downloadDispenseListPdfBtn" class="btn btn-info">Download PDF</button>
+                    <button type="button" id="copyDispenseListPdfBtn" class="btn btn-secondary">Copy PDF</button>
+                    <button type="button" class="btn btn-secondary cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="expirationModal" class="modal">
+            <div class="modal-content modal-lg">
+                <h2>Items Nearing Expiration (10 Days)</h2>
+                
+                <div class="form-group">
+                    <input type="text" id="expirationSearchInput" placeholder="Search expiring items...">
+                </div>
+
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item Name</th>
+                                <th>Expiration Date</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expirationListBody"></tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-container">
+                    <div class="pagination-controls">
+                        <button id="expirationPrevBtn" class="btn btn-sm">Previous</button>
+                        <button id="expirationNextBtn" class="btn btn-sm">Next</button>
+                    </div>
+                    <span id="expirationPageInfo" class="pagination-label">Page 1 of 1</span>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" id="downloadExpirationPdfBtn" class="btn btn-info">Download PDF</button>
+                    <button type="button" id="copyExpirationPdfBtn" class="btn btn-secondary">Copy PDF</button>
+                    <button type="button" class="btn btn-secondary cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="dispenseModal" class="modal">
+            <div class="modal-content">
+                <h2>Dispense Item</h2>
+                <form id="dispenseForm">
+                    <p>Item: <strong id="dispenseItemName"></strong></p>
+                    <p>Available Quantity: <strong id="dispenseAvailableQty"></strong></p>
+                    <div class="form-group">
+                        <label for="dispenseQuantity">Quantity to Dispense</label>
+                        <input type="number" id="dispenseQuantity" min="1" max="999999" required>
+                    </div>
+                    <p id="dispense-error" class="error-message"></p>
+                    <div class="modal-actions">
+                        <button type="submit" class="btn">Dispense</button>
+                        <button type="button" class="btn btn-secondary cancel-btn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div id="dpmModal" class="modal">
+            <div class="modal-content modal-lg">
+                <h2>Daily Product Movement</h2>
+                <div class="dpm-controls">
+                    <div class="form-group">
+                        <label for="dpmDateInput">Select a Date:</label>
+                        <input type="date" id="dpmDateInput" required>
+                    </div>
+                    <button id="dpmDateBtn" class="btn">Show Report for Selected Date</button>
+                </div>
+                <hr>
+                <div id="dpmContent"></div>
+                <div class="dpm-pagination-controls" style="display: none;">
+                    <div class="pagination">
+                        <button id="dpmPrevPageBtn" class="btn btn-sm">Previous</button>
+                        <span id="dpmPageInfo">Page 1 of 1</span>
+                        <button id="dpmNextPageBtn" class="btn btn-sm">Next</button>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary cancel-btn">Close</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="importTextModal" class="modal">
+            <div class="modal-content">
+                <h2>Import from Backup Text</h2>
+                <div class="form-group">
+                    <label for="importDataText">Paste your backup data here:</label>
+                    <textarea id="importDataText" rows="10" placeholder="Paste the content of your inventory-backup.json file here..."></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="loadTextBtn" class="btn">Load Backup</button>
+                    <button type="button" class="btn btn-secondary cancel-btn">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="adminPasswordModal" class="modal">
+            <div class="modal-content">
+                <h2>Admin Security</h2>
+                <form id="adminPasswordForm">
+                    <div class="form-group">
+                        <label for="adminPassword">Type your security password</label>
+                        <input type="password" id="adminPassword" required>
+                    </div>
+                    <p id="admin-password-error" class="error-message"></p>
+                    <div class="modal-actions">
+                        <button type="submit" class="btn">Enter</button>
+                        <button type="button" class="btn btn-secondary cancel-btn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="adminOptionsModal" class="modal">
+            <div class="modal-content">
+                <h2>System Progress</h2>
+                <form id="adminOptionsForm">
+                    <div class="form-group-toggle">
+                        <button id="toggleDateInputsBtn" type="button" class="btn btn-icon">&#10148;</button>
+                    </div>
+                    <div id="dateInputs" style="display:none;">
+                        <div class="form-group">
+                            <label for="timerStartDate">Progress Start</label>
+                            <input type="datetime-local" id="timerStartDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="timerEndDate">Progress End</label>
+                            <input type="datetime-local" id="timerEndDate" required>
+                        </div>
+                    </div>
+                    <p id="admin-options-error" class="error-message"></p>
+                    <div id="countdownDisplay" style="display: none;">
+                        <span id="countdownLabel">Progress will freeze in:</span>
+                        <div id="countdownTimer"></div>
+                    </div>
+                    <div class="modal-actions">
+                        <button id="toggleCountdownBtn" type="button" class="btn btn-icon">&#9670;</button>
+                        <button type="submit" class="btn">Start Progress</button>
+                        <button type="button" id="stopTimerBtn" class="btn btn-warning">Stop Progress</button>
+                        <button type="button" id="codeCheckerBtn" class="btn btn-success">Code Checker</button>
+                        <button type="button" id="clearDataBtn" class="btn btn-danger">Clear All Data</button>
+                        <button type="button" class="btn btn-secondary cancel-btn">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="clearDataPasswordModal" class="modal">
+            <div class="modal-content">
+                <h2>Confirm Data Deletion</h2>
+                <p><strong>DANGER:</strong> This will permanently erase ALL inventory and log data. This action cannot be undone.</p>
+                <p>Please enter the admin security password to proceed.</p>
+                <form id="clearDataForm">
+                    <div class="form-group">
+                        <label for="clearDataPassword">Password</label>
+                        <input type="password" id="clearDataPassword" required>
+                    </div>
+                    <p id="clear-data-error" class="error-message"></p>
+                    <div class="modal-actions">
+                        <button type="submit" class="btn btn-danger">Confirm & Delete All</button>
+                        <button type="button" class="btn btn-secondary cancel-btn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div id="expirationPasswordModal" class="modal">
+            <div class="modal-content">
+                <h2>Confirm Removal</h2>
+                <p>To remove this item from the expiration list, please enter the password.</p>
+                <form id="expirationPasswordForm">
+                    <div class="form-group">
+                        <label for="expirationItemPassword">Password</label>
+                        <input type="password" id="expirationItemPassword" required>
+                    </div>
+                    <p id="expiration-item-error" class="error-message"></p>
+                    <div class="modal-actions">
+                        <button type="submit" class="btn">Confirm</button>
+                        <button type="button" class="btn btn-secondary cancel-btn">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div id="manualCopyModal" class="modal">
+            <div class="modal-content">
+                <h2>Copy Data Manually</h2>
+                <p>Your data is too large to copy automatically. Please click "Select All" then copy the text below to a document to save your backup.</p>
+                <div class="form-group">
+                    <textarea id="manualCopyText" rows="15" readonly></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" id="selectAllBtn" class="btn btn-primary">Select All</button>
+                    <button type="button" class="btn btn-secondary cancel-btn">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="systemCheckModal" class="modal system-check-modal">
+            <canvas id="matrixCanvas"></canvas>
+            <div id="loadingBox">
+                <h3 id="loadingStatusText">Initializing System Scan...</h3>
+                <div id="progressBarContainer">
+                    <div id="progressBar"></div>
+                </div>
+                <p id="loadingPercentage">0%</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+
+            // --- INDEXEDDB DATABASE HELPER ---
+            const db = {
+                _db: null,
+                init: function() {
+                    return new Promise((resolve, reject) => {
+                        const request = indexedDB.open('InventoryDB', 3); // Version 3 for new indices
+
+                        request.onupgradeneeded = (event) => {
+                            const db = event.target.result;
+                            if (!db.objectStoreNames.contains('items')) {
+                                const itemStore = db.createObjectStore('items', { keyPath: 'id' });
+                                itemStore.createIndex('name', 'name', { unique: false });
+                            }
+                            if (!db.objectStoreNames.contains('dispenseLog')) {
+                                const logStore = db.createObjectStore('dispenseLog', { autoIncrement: true });
+                                logStore.createIndex('dispenseDate', 'dispenseDate', { unique: false });
+                                logStore.createIndex('dispenseDateLocal', 'dispenseDateLocal', { unique: false });
+                            } else {
+                                const logStore = request.transaction.objectStore('dispenseLog');
+                                if (!logStore.indexNames.contains('dispenseDateLocal')) {
+                                    logStore.createIndex('dispenseDateLocal', 'dispenseDateLocal', { unique: false });
+                                }
+                            }
+                        };
+
+                        request.onsuccess = (event) => {
+                            this._db = event.target.result;
+                            resolve();
+                        };
+
+                        request.onerror = (event) => {
+                            console.error("Database error: " + event.target.errorCode);
+                            reject(event.target.errorCode);
+                        };
+                    });
+                },
+
+                _getStore: function(name, mode) {
+                    const transaction = this._db.transaction(name, mode);
+                    return transaction.objectStore(name);
+                },
+
+                addItem: function(item) {
+                    return new Promise((resolve, reject) => {
+                        const request = this._getStore('items', 'readwrite').add(item);
+                        request.onsuccess = resolve;
+                        request.onerror = reject;
+                    });
+                },
+                
+                bulkAdd: function(storeName, data) {
+                    return new Promise((resolve, reject) => {
+                        const store = this._getStore(storeName, 'readwrite');
+                        data.forEach(item => store.add(item));
+                        store.transaction.oncomplete = resolve;
+                        store.transaction.onerror = reject;
+                    });
+                },
+
+                updateItem: function(item) {
+                    return new Promise((resolve, reject) => {
+                        const request = this._getStore('items', 'readwrite').put(item);
+                        request.onsuccess = resolve;
+                        request.onerror = reject;
+                    });
+                },
+
+                deleteItem: function(id) {
+                     return new Promise((resolve, reject) => {
+                        const request = this._getStore('items', 'readwrite').delete(id);
+                        request.onsuccess = resolve;
+                        request.onerror = reject;
+                    });
+                },
+                
+                getItem: function(id) {
+                    return new Promise((resolve, reject) => {
+                        const request = this._getStore('items', 'readonly').get(id);
+                        request.onsuccess = () => resolve(request.result);
+                        request.onerror = reject;
+                    });
+                },
+                
+                getAllItems: function() {
+                    return new Promise((resolve, reject) => {
+                        const request = this._getStore('items', 'readonly').getAll();
+                        request.onsuccess = () => resolve(request.result.sort((a,b) => b.id - a.id)); // Show newest first
+                        request.onerror = reject;
+                    });
+                },
+
+                addDispenseLog: function(log) {
+                     return new Promise((resolve, reject) => {
+                        const request = this._getStore('dispenseLog', 'readwrite').add(log);
+                        request.onsuccess = resolve;
+                        request.onerror = reject;
+                    });
+                },
+                
+                getAllDispenseLogs: function() {
+                    return new Promise((resolve, reject) => {
+                        const request = this._getStore('dispenseLog', 'readonly').getAll();
+                        request.onsuccess = () => resolve(request.result);
+                        request.onerror = reject;
+                    });
+                },
+
+                getDispenseLogByDate: function(dateString) {
+                    return new Promise((resolve, reject) => {
+                        const store = this._getStore('dispenseLog', 'readonly');
+                        const index = store.index('dispenseDateLocal');
+                        const request = index.getAll(dateString);
+                        request.onsuccess = () => resolve(request.result);
+                        request.onerror = reject;
+                    });
+                },
+                
+                deleteDispenseLogByDate: function(dateString) {
+                    return new Promise((resolve, reject) => {
+                        const store = this._getStore('dispenseLog', 'readwrite');
+                        const index = store.index('dispenseDateLocal');
+                        const request = index.openCursor(dateString);
+                        request.onsuccess = (event) => {
+                            const cursor = event.target.result;
+                            if (cursor) {
+                                cursor.delete();
+                                cursor.continue();
+                            } else {
+                                resolve();
+                            }
+                        };
+                        request.onerror = reject;
+                    });
+                },
+                
+                clearStore: function(storeName) {
+                    return new Promise((resolve, reject) => {
+                        const request = this._getStore(storeName, 'readwrite').clear();
+                        request.onsuccess = resolve;
+                        request.onerror = reject;
+                    });
+                }
+            };
+            
+            let timestampInterval = null;
+
+            // --- PAGE NAVIGATION LOGIC ---
+            const loginPage = document.getElementById('login-page');
+            const inventoryPage = document.getElementById('inventory-page');
+            const timestampEl = document.getElementById('timestamp');
+            const loginTimestampEl = document.getElementById('loginTimestamp');
+
+
+            const showLoginPage = () => {
+                loginPage.style.display = 'flex';
+                inventoryPage.style.display = 'none';
+                if (timestampInterval) {
+                    clearInterval(timestampInterval);
+                    timestampInterval = null;
+                }
+            };
+
+            const showInventoryPage = () => {
+                loginPage.style.display = 'none';
+                inventoryPage.style.display = 'block';
+                if (!timestampInterval) {
+                    updateTimestamp();
+                    timestampInterval = setInterval(updateTimestamp, 1000);
+                }
+            };
+            
+            const updateTimestamp = () => {
+                const now = new Date();
+                const dateOptions = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric'
+                };
+                const timeOptions = {
+                    hour12: true,
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    second: '2-digit'
+                };
+                const dateString = now.toLocaleDateString('en-US', dateOptions);
+                const timeString = now.toLocaleTimeString('en-US', timeOptions);
+
+                if (timestampEl) {
+                    timestampEl.innerHTML = `${dateString}<br>${timeString}`;
+                }
+                if (loginTimestampEl) {
+                    loginTimestampEl.innerHTML = `
+                        <span>${dateString}</span>
+                        <span>${timeString}</span>
+                    `;
+                }
+            };
+
+
+            // --- LOGIN PAGE LOGIC ---
+            const handleLoginPage = () => {
+                const loginForm = document.getElementById('loginForm');
+                const usernameInput = document.getElementById('username');
+                const passwordInput = document.getElementById('password');
+                const loginErrorEl = document.getElementById('login-error');
+
+                loginForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const username = usernameInput.value.trim();
+                    const password = passwordInput.value;
+
+                    if (username === 'account1' && password === 'store2025') {
+                        sessionStorage.setItem('loggedIn', 'true');
+                        showInventoryPage();
+                        await refreshAndRenderTable();
+                        loginErrorEl.textContent = '';
+                    }
+                    else if (username != 'account1' && password === 'store2025') {
+                        sessionStorage.setItem('loggedIn', 'true');
+                        
+                        await refreshAndRenderTable();
+                        loginErrorEl.textContent = 'invalid username';
+                    }
+
+                    else if (username === 'account1' && password != 'store2025') {
+                        sessionStorage.setItem('loggedIn', 'true');
+                        
+                        await refreshAndRenderTable();
+                        loginErrorEl.textContent = 'invalid password';
+                    }
+
+                    else {
+                        loginErrorEl.textContent = 'Invalid username or password.';
+                    }
+                });
+            };
+
+            // --- INVENTORY PAGE LOGIC ---
+            let currentPage = 1;
+            const itemsPerPage = 5;
+            let editItemId = null;
+            let dispenseItemId = null;
+            
+            // State variables for various modals
+            let dispenseListPage = 1;
+            const dispenseListItemsPerPage = 5;
+            let fullDispenseList = [];  
+            
+            let fullListPage = 1;
+            const fullListItemsPerPage = 10;
+            let fullInventoryList = [];
+
+            // State variables for the Expiration List Modal
+            let expirationListPage = 1;
+            const expirationListItemsPerPage = 5;
+            let fullExpirationList = [];
+
+            let matrixInterval = null, progressInterval = null;
+
+            let countdownInterval = null;
+
+            const tableBody = document.getElementById('inventoryTableBody');
+            const itemModal = document.getElementById('itemModal');
+            const manualCopyModal = document.getElementById('manualCopyModal');
+            
+            const showModal = (modal) => modal.style.display = 'flex';
+
+            const hideModal = (modal) => {
+                modal.style.display = 'none';
+                modal.querySelectorAll('form').forEach(form => form.reset());
+                modal.querySelectorAll('.error-message').forEach(el => el.textContent = '');
+            };
+
+            // --- DATA & RENDER FUNCTIONS ---
+            const refreshAndRenderTable = async () => {
+                const inventory = await db.getAllItems();
+                renderTable(inventory);
+                applyUIState();  
+            };
+
+            const renderTable = (inventory = []) => {
+                tableBody.innerHTML = '';
+                const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+                const filteredInventory = inventory.filter(item => item.name.toLowerCase().includes(searchTerm));
+                
+                const totalPages = Math.ceil(filteredInventory.length / itemsPerPage) || 1;
+                currentPage = Math.min(currentPage, totalPages);
+
+                const startIndex = (currentPage - 1) * itemsPerPage;
+                const paginatedItems = filteredInventory.slice(startIndex, startIndex + itemsPerPage);
+
+                paginatedItems.forEach(item => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${item.name}</td>
+                        <td>${item.quantity}</td>
+                        <td>₱${parseFloat(item.unitPrice).toFixed(2)}</td>
+                        <td>${item.expirationDate || 'N/A'}</td>
+                        <td>${item.registrationDate}</td>
+                        <td>
+                            <div class="table-actions">
+                                <button class="btn btn-sm edit-btn" data-id="${item.id}">Edit</button>
+                                <button class="btn btn-sm dispense-btn" data-id="${item.id}">Dispense</button>
+                                <button class="btn btn-sm btn-danger delete-btn" data-id="${item.id}">Delete</button>
+                            </div>
+                        </td>`;
+                    tableBody.appendChild(row);
+                });
+
+                document.getElementById('pageInfo').textContent = `Page ${currentPage} of ${totalPages}`;
+                document.getElementById('prevPageBtn').disabled = currentPage === 1;
+                document.getElementById('nextPageBtn').disabled = currentPage === totalPages;
+                const uniqueItemNames = new Set(inventory.map(item => item.name));
+                document.getElementById('totalItems').textContent = `Total Unique Items: ${uniqueItemNames.size}`;
+            };
+            
+            // --- EVENT LISTENERS ---
+            document.getElementById('itemName').addEventListener('input', (e) => {
+                const input = e.target;
+                if (input.value.length > 0) {
+                    input.value = input.value.charAt(0).toUpperCase() + input.value.slice(1);
+                }
+            });
+
+            document.getElementById('itemForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const errorEl = document.getElementById('item-form-error');
+                errorEl.textContent = '';
+                const allItems = await db.getAllItems();
+                const newName = document.getElementById('itemName').value.trim();
+                const quantityInput = document.getElementById('quantity').value;
+                const unitPriceInput = document.getElementById('unitPrice').value;
+                const expirationDate = document.getElementById('expirationDate').value;
+                const today = new Date();
+                today.setHours(0,0,0,0);
+                
+                if (!newName) {
+                    errorEl.textContent = 'Item name cannot be empty.';
+                    return;
+                }
+                
+                const parsedQuantity = parseInt(quantityInput);
+                const parsedPrice = parseFloat(unitPriceInput);
+
+                if (isNaN(parsedQuantity) || parsedQuantity < 0 || parsedQuantity > 999999) {
+                    errorEl.textContent = 'Quantity must be a number between 0 and 999,999.';
+                    return;
+                }
+
+                if (isNaN(parsedPrice) || parsedPrice < 0 || parsedPrice > 999999) {
+                    errorEl.textContent = 'Unit price must be a number between 0 and 999,999.';
+                    return;
+                }
+
+                if (unitPriceInput.split('.').length > 1 && unitPriceInput.split('.')[1].length > 2) {
+                    errorEl.textContent = 'Unit price can only have up to two decimal places.';
+                    return;
+                }
+
+
+                if (expirationDate) {
+                    const expDate = new Date(expirationDate + 'T00:00:00');
+                    if (expDate < today) {
+                        errorEl.textContent = 'The expiration date cannot be in the past.';
+                        return;
+                    }
+                }
+
+                if (editItemId) {
+                    const isDuplicate = allItems.some(item => 
+                        item.name.toLowerCase() === newName.toLowerCase() && item.id !== editItemId
+                    );
+                    if (isDuplicate) {
+                        errorEl.textContent = `An item named "${newName}" already exists. Please choose a different name.`;
+                        return;
+                    }
+                } else {
+                    const isDuplicate = allItems.some(item => item.name.toLowerCase() === newName.toLowerCase());
+                    if (isDuplicate) {
+                        errorEl.textContent = `An item named "${newName}" already exists. Please use a different name.`;
+                        return;
+                    }
+                }
+
+                const itemData = {
+                    name: newName,
+                    quantity: parsedQuantity,
+                    unitPrice: parsedPrice,
+                    expirationDate: expirationDate,
+                    registrationDate: document.getElementById('registrationDate').value
+                };
+
+                if (editItemId) {
+                    if (confirm('Are you sure you want to update this item?')) {
+                        const originalItem = await db.getItem(editItemId);
+                        const finalItemData = { ...originalItem, ...itemData };
+                        
+                        if (finalItemData.quantity > originalItem.quantity) {
+                            finalItemData.isDispensed = false;
+                            delete finalItemData.lastDispenseTimestamp;
+                            delete finalItemData.lastDispensedQty;
+                        }
+                        if (finalItemData.expirationDate !== originalItem.expirationDate) {
+                           finalItemData.expirationAcknowledged = false;
+                        }
+                        
+                        await db.updateItem(finalItemData);
+                        await refreshAndRenderTable();
+                        hideModal(itemModal);
+                        editItemId = null;
+                    }
+                } else {
+                    await db.addItem({ id: Date.now(), ...itemData });
+                    await refreshAndRenderTable();
+                    hideModal(itemModal);
+                }
+            });
+
+            tableBody.addEventListener('click', async (e) => {
+                const target = e.target;
+                const id = parseInt(target.dataset.id);
+                if (!id) return;
+                
+                if (target.classList.contains('edit-btn')) {
+                    const item = await db.getItem(id);
+                    editItemId = id;
+                    document.getElementById('modalTitle').textContent = 'Edit Item';
+                    document.getElementById('itemName').value = item.name;
+                    document.getElementById('quantity').value = item.quantity;
+                    document.getElementById('unitPrice').value = item.unitPrice;
+                    document.getElementById('expirationDate').value = item.expirationDate;
+                    document.getElementById('registrationDate').value = item.registrationDate;
+                    showModal(itemModal);
+                } else if (target.classList.contains('dispense-btn')) {
+                    const item = await db.getItem(id);
+                    dispenseItemId = id;
+                    document.getElementById('dispenseItemName').textContent = item.name;
+                    document.getElementById('dispenseAvailableQty').textContent = item.quantity;
+                    document.getElementById('dispenseQuantity').max = item.quantity;
+                    showModal(document.getElementById('dispenseModal'));
+                } else if (target.classList.contains('delete-btn')) {
+                    if (confirm('Are you sure you want to delete this item?')) {
+                        await db.deleteItem(id);
+                        await refreshAndRenderTable();
+                    }
+                }
+            });
+            
+            document.getElementById('logoutBtn').addEventListener('click', () => {
+                sessionStorage.removeItem('loggedIn');
+                document.getElementById('loginForm').reset();
+                showLoginPage();
+            });
+
+            document.getElementById('registerBtn').addEventListener('click', () => {
+                editItemId = null;
+                document.getElementById('itemForm').reset();
+                document.getElementById('modalTitle').textContent = 'Register New Item';
+                document.getElementById('registrationDate').valueAsDate = new Date();
+                const quantityInput = document.getElementById('quantity');
+                quantityInput.min = 1;
+                quantityInput.value = 1;
+                document.getElementById('item-form-error').textContent = '';
+                showModal(itemModal);
+            });
+
+            // --- MAIN ACTION BUTTON LISTENERS & MODAL LOGIC ---
+            
+            const actionButtonsContainer = document.getElementById('actionButtons');
+            const toggleActionsBtn = document.getElementById('toggleActionsBtn');
+
+            toggleActionsBtn.addEventListener('click', () => {
+                const isHidden = actionButtonsContainer.style.display === 'none';
+                actionButtonsContainer.style.display = isHidden ? 'flex' : 'none';
+                toggleActionsBtn.textContent = isHidden ? '◆' : '◇';
+            });
+
+            // Logic for "Item for Replacement" Modal
+            const renderDispenseListModal = () => {
+                const searchTerm = document.getElementById('dispenseListSearchInput').value.toLowerCase();
+                const listBody = document.getElementById('dispenseListBody');
+                const filteredList = fullDispenseList.filter(item => item.name.toLowerCase().includes(searchTerm));
+                listBody.innerHTML = '';
+                const totalPages = Math.ceil(filteredList.length / dispenseListItemsPerPage) || 1;
+                dispenseListPage = Math.min(dispenseListPage, totalPages);
+                const startIndex = (dispenseListPage - 1) * dispenseListItemsPerPage;
+                const paginatedItems = filteredList.slice(startIndex, startIndex + dispenseListItemsPerPage);
+                if (paginatedItems.length === 0) {
+                    listBody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No items match your search.</td></tr>';
+                } else {
+                    paginatedItems.forEach(item => {
+                        const row = document.createElement('tr');
+                        const dispenseTimestamp = item.lastDispenseTimestamp ? new Date(item.lastDispenseTimestamp) : null;
+                        row.innerHTML = `
+                            <td>${item.name}</td>
+                            <td>${dispenseTimestamp ? dispenseTimestamp.toLocaleDateString() : 'N/A'}</td>
+                            <td>${dispenseTimestamp ? dispenseTimestamp.toLocaleTimeString() : 'N/A'}</td>
+                            <td>${item.lastDispensedQty || 'N/A'}</td>
+                            <td>${item.quantity}</td>
+                        `;
+                        listBody.appendChild(row);
+                    });
+                }
+                document.getElementById('dispenseListPageInfo').textContent = `Page ${dispenseListPage} of ${totalPages}`;
+                document.getElementById('dispenseListPrevBtn').disabled = dispenseListPage === 1;
+                document.getElementById('dispenseListNextBtn').disabled = dispenseListPage === totalPages;
+            };
+
+            document.getElementById('dispenseListBtn').addEventListener('click', async () => {
+                const allItems = await db.getAllItems();
+                fullDispenseList = allItems.filter(item => item.isDispensed === true);
+                dispenseListPage = 1;
+                document.getElementById('dispenseListSearchInput').value = '';
+                renderDispenseListModal();
+                showModal(document.getElementById('dispenseListModal'));
+            });
+
+            document.getElementById('dispenseListSearchInput').addEventListener('input', () => {
+                dispenseListPage = 1;
+                renderDispenseListModal();
+            });
+
+            document.getElementById('dispenseListPrevBtn').addEventListener('click', () => {
+                if (dispenseListPage > 1) {
+                    dispenseListPage--;
+                    renderDispenseListModal();
+                }
+            });
+
+            document.getElementById('dispenseListNextBtn').addEventListener('click', () => {
+                dispenseListPage++;
+                renderDispenseListModal();
+            });
+
+            const generateDispenseListPDF = async (outputType = 'save') => {
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    
+                    if (fullDispenseList.length === 0) {
+                        alert('No data to generate a report.');
+                        return;
+                    }
+
+                    const tableColumn = ["Item Name", "Last Dispense Date", "Time", "Qty Dispensed", "Qty Remaining"];
+                    const tableRows = fullDispenseList.map(item => {
+                        const ts = item.lastDispenseTimestamp ? new Date(item.lastDispenseTimestamp) : null;
+                        return [
+                            item.name,
+                            ts ? ts.toLocaleDateString() : 'N/A',
+                            ts ? ts.toLocaleTimeString() : 'N/A',
+                            item.lastDispensedQty || 'N/A',
+                            item.quantity
+                        ];
+                    });
+                    
+                    doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20, didDrawPage: (data) => { doc.text("Items for Replacement Report", 14, 15); } });
+                    
+                    if (outputType === 'save') {
+                        doc.save(`Items-For-Replacement-${new Date().toISOString().slice(0, 10)}.pdf`);
+                    } else if (outputType === 'copy') {
+                        const dataUriString = doc.output('datauristring');
+                        document.getElementById('manualCopyText').value = dataUriString;
+                        document.querySelector('#manualCopyModal h2').textContent = 'Copy PDF Data Manually';
+                        showModal(manualCopyModal);
+                    }
+                } catch (error) {
+                    console.error('PDF generation failed:', error);
+                    alert('Could not generate the PDF.');
+                }
+            };
+            document.getElementById('downloadDispenseListPdfBtn').addEventListener('click', () => generateDispenseListPDF('save'));
+            document.getElementById('copyDispenseListPdfBtn').addEventListener('click', () => generateDispenseListPDF('copy'));
+
+            // Logic for "View Full List" Modal
+            const renderFullListModal = () => {
+                const listContainer = document.getElementById('fullItemList');
+                const totalPages = Math.ceil(fullInventoryList.length / fullListItemsPerPage) || 1;
+                fullListPage = Math.min(fullListPage, totalPages);
+                
+                const startIndex = (fullListPage - 1) * fullListItemsPerPage;
+                const paginatedItems = fullInventoryList.slice(startIndex, startIndex + fullListItemsPerPage);
+
+                listContainer.innerHTML = paginatedItems.length 
+                    ? `<ul>${paginatedItems.map(item => `<li>${item.name} - Qty: ${item.quantity} (Price: ₱${item.unitPrice.toFixed(2)})</li>`).join('')}</ul>` 
+                    : '<p>No items found.</p>';
+
+                document.getElementById('fullListPageInfo').textContent = `Page ${fullListPage} of ${totalPages}`;
+                document.getElementById('fullListPrevBtn').disabled = fullListPage === 1;
+                document.getElementById('fullListNextBtn').disabled = fullListPage === totalPages;
+            };
+
+            document.getElementById('viewListBtn').addEventListener('click', async () => {
+                fullInventoryList = await db.getAllItems();
+                fullListPage = 1;
+                renderFullListModal();
+                showModal(document.getElementById('viewListModal'));
+            });
+
+            document.getElementById('fullListPrevBtn').addEventListener('click', () => {
+                if (fullListPage > 1) {
+                    fullListPage--;
+                    renderFullListModal();
+                }
+            });
+
+            document.getElementById('fullListNextBtn').addEventListener('click', () => {
+                fullListPage++;
+                renderFullListModal();
+            });
+
+            const generateFullListPDF = async (outputType = 'save') => {
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    if (fullInventoryList.length === 0) { alert('No data to generate a report.'); return; }
+
+                    const tableColumn = ["Item Name", "Quantity", "Unit Price", "Expiration Date", "Registration Date"];
+                    const tableRows = fullInventoryList.map(item => [ item.name, item.quantity, `P ${item.unitPrice.toFixed(2)}`, item.expirationDate || 'N/A', item.registrationDate ]);
+                    
+                    doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20, didDrawPage: (data) => { doc.text("Full Inventory Report", 14, 15); } });
+                    
+                    if (outputType === 'save') {
+                        doc.save(`Full-Inventory-Report-${new Date().toISOString().slice(0, 10)}.pdf`);
+                    } else if (outputType === 'copy') {
+                        const dataUriString = doc.output('datauristring');
+                        document.getElementById('manualCopyText').value = dataUriString;
+                        document.querySelector('#manualCopyModal h2').textContent = 'Copy PDF Data Manually';
+                        showModal(manualCopyModal);
+                    }
+                } catch (error) { console.error('PDF generation failed:', error); alert('Could not generate the PDF.'); }
+            };
+
+            document.getElementById('downloadFullListPdfBtn').addEventListener('click', () => generateFullListPDF('save'));
+            document.getElementById('copyFullListPdfBtn').addEventListener('click', () => generateFullListPDF('copy'));
+
+            // Logic for "Item Expiration" Modal
+            const renderExpirationModal = () => {
+                const searchTerm = document.getElementById('expirationSearchInput').value.toLowerCase();
+                const listBody = document.getElementById('expirationListBody');
+                
+                const filteredList = fullExpirationList.filter(item => item.name.toLowerCase().includes(searchTerm));
+                listBody.innerHTML = '';
+
+                const totalPages = Math.ceil(filteredList.length / expirationListItemsPerPage) || 1;
+                expirationListPage = Math.min(expirationListPage, totalPages);
+                
+                const startIndex = (expirationListPage - 1) * expirationListItemsPerPage;
+                const paginatedItems = filteredList.slice(startIndex, startIndex + expirationListItemsPerPage);
+
+                if (paginatedItems.length === 0) {
+                    listBody.innerHTML = '<tr><td colspan="3" style="text-align:center;">No items match your criteria.</td></tr>';
+                } else {
+                    paginatedItems.forEach(item => {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${item.name}</td>
+                            <td>${item.expirationDate}</td>
+                            <td><button class="btn btn-sm btn-danger ack-expire-btn" data-id="${item.id}">Delete</button></td>`;
+                        listBody.appendChild(row);
+                    });
+                }
+
+                document.getElementById('expirationPageInfo').textContent = `Page ${expirationListPage} of ${totalPages}`;
+                document.getElementById('expirationPrevBtn').disabled = expirationListPage === 1;
+                document.getElementById('expirationNextBtn').disabled = expirationListPage === totalPages;
+            };
+            
+            document.getElementById('expirationBtn').addEventListener('click', async () => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                const tenDaysFromNow = new Date();
+                tenDaysFromNow.setDate(today.getDate() + 10);
+                const allItems = await db.getAllItems();
+                
+                fullExpirationList = allItems.filter(item => {
+                    if (!item.expirationDate || item.expirationAcknowledged) return false;
+                    const expiration = new Date(item.expirationDate + 'T00:00:00');
+                    return expiration >= today && expiration <= tenDaysFromNow;
+                });
+                
+                expirationListPage = 1;
+                document.getElementById('expirationSearchInput').value = '';
+                renderExpirationModal();
+                showModal(document.getElementById('expirationModal'));
+            });
+
+            document.getElementById('expirationSearchInput').addEventListener('input', () => {
+                expirationListPage = 1;
+                renderExpirationModal();
+            });
+
+            document.getElementById('expirationPrevBtn').addEventListener('click', () => {
+                if (expirationListPage > 1) {
+                    expirationListPage--;
+                    renderExpirationModal();
+                }
+            });
+
+            document.getElementById('expirationNextBtn').addEventListener('click', () => {
+                expirationListPage++;
+                renderExpirationModal();
+            });
+            
+            document.getElementById('expirationListBody').addEventListener('click', async (e) => {
+                if (e.target.classList.contains('ack-expire-btn')) {
+                    const id = parseInt(e.target.dataset.id);
+                    const expirationPasswordModal = document.getElementById('expirationPasswordModal');
+                    expirationPasswordModal.dataset.itemId = id;
+                    showModal(expirationPasswordModal);
+                }
+            });
+
+            const generateExpirationListPDF = async (outputType = 'save') => {
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    
+                    if (fullExpirationList.length === 0) {
+                        alert('No data to generate a report.');
+                        return;
+                    }
+
+                    const tableColumn = ["Item Name", "Expiration Date", "Quantity"];
+                    const tableRows = fullExpirationList.map(item => [ item.name, item.expirationDate, item.quantity ]);
+                    
+                    doc.autoTable({ head: [tableColumn], body: tableRows, startY: 20, didDrawPage: (data) => { doc.text("Expiring Items Report (Next 10 Days)", 14, 15); } });
+                    
+                    if (outputType === 'save') {
+                        doc.save(`Expiring-Items-${new Date().toISOString().slice(0, 10)}.pdf`);
+                    } else if (outputType === 'copy') {
+                        const dataUriString = doc.output('datauristring');
+                        document.getElementById('manualCopyText').value = dataUriString;
+                        document.querySelector('#manualCopyModal h2').textContent = 'Copy PDF Data Manually';
+                        showModal(manualCopyModal);
+                    }
+                } catch (error) {
+                    console.error('PDF generation failed:', error);
+                    alert('Could not generate the PDF.');
+                }
+            };
+            document.getElementById('downloadExpirationPdfBtn').addEventListener('click', () => generateExpirationListPDF('save'));
+            document.getElementById('copyExpirationPdfBtn').addEventListener('click', () => generateExpirationListPDF('copy'));
+
+            
+            document.getElementById('expirationPasswordForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const modal = e.target.closest('.modal');
+                const id = parseInt(modal.dataset.itemId);
+                const password = document.getElementById('expirationItemPassword').value;
+                const errorEl = document.getElementById('expiration-item-error');
+                if (password === 'store2025') {
+                    const item = await db.getItem(id);
+                    item.expirationAcknowledged = true;
+                    await db.updateItem(item);
+                    hideModal(modal);
+                    
+                    fullExpirationList = fullExpirationList.filter(i => i.id !== id);
+                    renderExpirationModal();
+                } else {
+                    errorEl.textContent = 'Incorrect password.';
+                }
+            });
+
+            // --- Import / Export ---
+            
+            document.getElementById('exportBtnText').addEventListener('click', async () => {
+                try {
+                    const backupData = { items: await db.getAllItems(), dispenseLog: await db.getAllDispenseLogs() };
+                    const jsonString = JSON.stringify(backupData, null, 2);
+                    document.getElementById('manualCopyText').value = jsonString;
+                    document.querySelector('#manualCopyModal h2').textContent = 'Copy Backup Data Manually';
+                    showModal(manualCopyModal);
+                } catch (error) { console.error('Export failed:', error); alert('Failed to export backup. The data might be too large to copy.'); }
+            });
+
+            document.getElementById('importBtnText').addEventListener('click', () => showModal(document.getElementById('importTextModal')));
+            
+            document.getElementById('exportBtnFile').addEventListener('click', async () => {
+                try {
+                    const backupData = { items: await db.getAllItems(), dispenseLog: await db.getAllDispenseLogs() };
+                    const jsonString = JSON.stringify(backupData, null, 2);
+                    const blob = new Blob([jsonString], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'inventory-backup.json';
+                    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                } catch (error) { console.error('Export failed:', error); alert('Failed to create backup file.'); }
+            });
+
+            const importFileInput = document.getElementById('importFileInput');
+            document.getElementById('importBtnFile').addEventListener('click', () => importFileInput.click());
+            
+            const processImportedData = async (jsonString) => {
+                if (!confirm('This will replace all current data with the backup data. Are you sure you want to proceed?')) {
+                    importFileInput.value = null;  
+                    return;
+                }
+                try {
+                    const backupData = JSON.parse(jsonString);
+                    if (!backupData.items || !backupData.dispenseLog) throw new Error("Invalid backup file format.");
+                    await db.clearStore('items');
+                    await db.clearStore('dispenseLog');
+                    await db.bulkAdd('items', backupData.items);
+                    await db.bulkAdd('dispenseLog', backupData.dispenseLog);
+                    await refreshAndRenderTable();
+                    alert('Backup imported successfully!');
+                } catch (error) { alert(`Failed to import backup: ${error.message}. Please ensure you have selected a valid backup file.`); }
+                importFileInput.value = null;  
+            };
+
+            importFileInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (e) => processImportedData(e.target.result);
+                reader.onerror = () => alert('Error reading file.');
+                reader.readAsText(file);
+            });
+
+            document.getElementById('loadTextBtn').addEventListener('click', async () => {
+                const jsonString = document.getElementById('importDataText').value;
+                if (!jsonString.trim()) { alert('Please paste your backup data into the text box.'); return; }
+                await processImportedData(jsonString);
+                hideModal(document.getElementById('importTextModal'));
+            });
+            
+            document.getElementById('searchInput').addEventListener('input', async () => {
+                currentPage = 1;
+                await refreshAndRenderTable();
+            });
+
+            document.getElementById('prevPageBtn').addEventListener('click', () => {
+                if (currentPage > 1) { currentPage--; refreshAndRenderTable(); }
+            });
+
+            document.getElementById('nextPageBtn').addEventListener('click', async () => {
+                const inventory = await db.getAllItems();
+                const totalPages = Math.ceil(inventory.length / itemsPerPage);
+                if(currentPage < totalPages) { currentPage++; refreshAndRenderTable(); }
+            });
+            
+            document.getElementById('dispenseForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const item = await db.getItem(dispenseItemId);
+                const quantityToDispense = parseInt(document.getElementById('dispenseQuantity').value);
+                const errorEl = document.getElementById('dispense-error');
+
+                if (isNaN(quantityToDispense) || quantityToDispense <= 0) {
+                    errorEl.textContent = 'Please enter a valid quantity greater than zero.';
+                    return;
+                }
+                if (quantityToDispense > item.quantity) {
+                    errorEl.textContent = 'Dispense quantity exceeds available stock.'; return;
+                }
+                
+                item.quantity -= quantityToDispense;
+                item.isDispensed = true;
+                item.lastDispenseTimestamp = new Date().toISOString();
+                item.lastDispensedQty = quantityToDispense;
+                await db.updateItem(item);
+                
+                const now = new Date();
+                const localDateString = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+                await db.addDispenseLog({
+                    itemId: item.id, itemName: item.name, dispensedQty: quantityToDispense,
+                    remainingQty: item.quantity, unitPrice: item.unitPrice,
+                    totalAmount: quantityToDispense * item.unitPrice,
+                    dispenseDate: new Date().toISOString(),
+                    dispenseDateLocal: localDateString
+                });
+
+                await refreshAndRenderTable();
+             hideModal(document.getElementById('dispenseModal'));
+            });
+
+            // ================== UPDATED DPM LOGIC ==================
+            let dpmReportDate = null;
+            let dpmCurrentPage = 1;
+            const dpmItemsPerPage = 10;
+            let currentDPMLogs = [];
+            let dpmTotalSales = 0;
+
+            const renderDPMReport = () => {
+                const dpmContent = document.getElementById('dpmContent');
+                const paginationControls = document.querySelector('.dpm-pagination-controls');
+                dpmContent.innerHTML = '';
+                paginationControls.style.display = 'none';
+
+                if (!dpmReportDate || currentDPMLogs.length === 0) {
+                    dpmContent.innerHTML = `<p>No items were dispensed on ${dpmReportDate || 'the selected date'}.</p>`;
+                    return;
+                }
+
+                const filteredLogs = currentDPMLogs.slice().sort((a, b) => new Date(b.dispenseDate) - new Date(a.dispenseDate));
+
+                const totalPages = Math.ceil(filteredLogs.length / dpmItemsPerPage) || 1;
+                dpmCurrentPage = Math.min(dpmCurrentPage, totalPages);
+                const startIndex = (dpmCurrentPage - 1) * dpmItemsPerPage;
+                const paginatedLogs = filteredLogs.slice(startIndex, startIndex + dpmItemsPerPage);
+                
+                const table = document.createElement('table');
+                table.className = 'dpm-table';
+                table.innerHTML = `
+                    <caption>Report for ${dpmReportDate}</caption>
+                    <thead>
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Qty Dispensed</th>
+                            <th>Qty Remaining</th>
+                            <th>Unit Price</th>
+                            <th>Total Amount</th>
+                            <th>Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${paginatedLogs.map(log => {
+                            const dispenseTime = new Date(log.dispenseDate).toLocaleTimeString();
+                            return `
+                                <tr>
+                                    <td>${log.itemName}</td>
+                                    <td>${log.dispensedQty}</td>
+                                    <td>${log.remainingQty}</td>
+                                    <td>₱${log.unitPrice.toFixed(2)}</td>
+                                    <td>₱${log.totalAmount.toFixed(2)}</td>
+                                    <td>${dispenseTime}</td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="4" style="text-align:right; font-weight: bold;">Total Sales:</td>
+                            <td style="font-weight: bold;">₱${dpmTotalSales.toFixed(2)}</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                `;
+
+                const actionButtons = document.createElement('div');
+                actionButtons.className = 'dpm-actions';
+                actionButtons.innerHTML = `
+                    <button class="btn" onclick="downloadDPMReport('${dpmReportDate}')">Download PDF</button>
+                    <button class="btn" onclick="copyDPMReportPDF('${dpmReportDate}')">Copy PDF Data</button>
+                    <button class="btn btn-danger" onclick="deleteDPMReport('${dpmReportDate}')">Delete Day's Records</button>
+                `;
+
+                dpmContent.appendChild(table);
+                dpmContent.appendChild(actionButtons);
+                
+                if (filteredLogs.length > dpmItemsPerPage) {
+                    paginationControls.style.display = 'block';
+                    document.getElementById('dpmPageInfo').textContent = `Page ${dpmCurrentPage} of ${totalPages}`;
+                    document.getElementById('dpmPrevPageBtn').disabled = dpmCurrentPage === 1;
+                    document.getElementById('dpmNextPageBtn').disabled = dpmCurrentPage === totalPages;
+                }
+            };
+            
+            document.getElementById('dpmBtn').addEventListener('click', () => {
+                document.getElementById('dpmContent').innerHTML = '<p>Please select a date to view the report.</p>';
+                document.querySelector('.dpm-pagination-controls').style.display = 'none';
+                const today = new Date().toISOString().slice(0, 10);
+                document.getElementById('dpmDateInput').value = today;
+                dpmReportDate = today;
+                showModal(document.getElementById('dpmModal'));
+                document.getElementById('dpmDateBtn').click();
+            });
+            
+            document.getElementById('dpmDateInput').addEventListener('change', async (e) => {
+                dpmReportDate = e.target.value;
+                currentDPMLogs = await db.getDispenseLogByDate(dpmReportDate);
+                dpmTotalSales = currentDPMLogs.reduce((sum, log) => sum + log.totalAmount, 0);
+                dpmCurrentPage = 1;
+                renderDPMReport();
+            });
+            
+            document.getElementById('dpmDateBtn').addEventListener('click', async () => {
+              dpmReportDate = document.getElementById('dpmDateInput').value;
+              if (!dpmReportDate) {
+                alert('Please select a date.');
+                return;
+              }
+              currentDPMLogs = await db.getDispenseLogByDate(dpmReportDate);
+              dpmTotalSales = currentDPMLogs.reduce((sum, log) => sum + log.totalAmount, 0);
+              dpmCurrentPage = 1;
+              renderDPMReport();
+            });
+
+            document.getElementById('dpmPrevPageBtn').addEventListener('click', () => {
+                if (dpmCurrentPage > 1) {
+                    dpmCurrentPage--;
+                    renderDPMReport();
+                }
+            });
+
+            document.getElementById('dpmNextPageBtn').addEventListener('click', () => {
+                dpmCurrentPage++;
+                renderDPMReport();
+            });
+            
+            // Global functions for DPM buttons to work from rendered HTML
+            window.downloadDPMReport = async (dateString) => {
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    const logs = await db.getDispenseLogByDate(dateString);
+                    if (logs.length === 0) return alert("No data to generate a report for this date.");
+                    
+                    const totalAmount = logs.reduce((t, e) => t + e.totalAmount, 0);
+                    const tableColumn = ["Item", "Dispensed", "Remaining", "Unit Price", "Total", "Time"];
+                    const tableRows = logs.map(log => [
+                        log.itemName, log.dispensedQty, log.remainingQty, `P ${log.unitPrice.toFixed(2)}`,
+                        `P ${log.totalAmount.toFixed(2)}`, new Date(log.dispenseDate).toLocaleTimeString()
+                    ]);
+                    
+                    doc.autoTable({
+                        head: [tableColumn], body: tableRows, startY: 20,
+                        didDrawPage: (data) => { doc.text(`Daily Report: ${dateString}`, 14, 15); }
+                    });
+                    doc.text(`Total Sales: P ${totalAmount.toFixed(2)}`, 14, doc.lastAutoTable.finalY + 10);
+                    
+                    doc.save(`DPM-Report-${dateString}.pdf`);
+                } catch (t) {
+                    console.error("PDF generation failed:", t);
+                    alert("Could not generate the PDF file.");
+                }
+            };
+
+            window.copyDPMReportPDF = async (dateString) => {
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF();
+                    const logs = await db.getDispenseLogByDate(dateString);
+                    if (logs.length === 0) return alert("No data to copy for this date.");
+
+                    const totalAmount = logs.reduce((t, e) => t + e.totalAmount, 0);
+                    const tableColumn = ["Item", "Dispensed", "Remaining", "Unit Price", "Total", "Time"];
+                    const tableRows = logs.map(log => [
+                        log.itemName, log.dispensedQty, log.remainingQty, `P ${log.unitPrice.toFixed(2)}`,
+                        `P ${log.totalAmount.toFixed(2)}`, new Date(log.dispenseDate).toLocaleTimeString()
+                    ]);
+                    
+                    doc.autoTable({
+                        head: [tableColumn], body: tableRows, startY: 20,
+                        didDrawPage: (data) => { doc.text(`Daily Report: ${dateString}`, 14, 15); }
+                    });
+                    doc.text(`Total Sales: P ${totalAmount.toFixed(2)}`, 14, doc.lastAutoTable.finalY + 10);
+                    
+                    const dataUriString = doc.output("datauristring");
+                    document.getElementById('manualCopyText').value = dataUriString;
+                    document.querySelector('#manualCopyModal h2').textContent = 'Copy PDF Data Manually';
+                    showModal(manualCopyModal);
+
+                } catch (t) {
+                    console.error("PDF copying failed:", t);
+                    alert("Could not copy the PDF data.");
+                }
+            };
+
+            window.deleteDPMReport = async (dateString) => {
+                if (confirm(`Delete all records for ${dateString}? This cannot be undone.`)) {
+                    await db.deleteDispenseLogByDate(dateString).then(() => {
+                        alert(`All records for ${dateString} have been deleted.`);
+                        dpmReportDate = null;
+                        currentDPMLogs = [];
+                        dpmTotalSales = 0;
+                        renderDPMReport();
+                    }).catch(e => {
+                        console.error("Deletion failed:", e);
+                        alert("Failed to delete records.");
+                    });
+                }
+            };
+            // ================== END UPDATED DPM LOGIC ==================
+
+            document.querySelectorAll('.modal').forEach(modal => {
+              modal.querySelector('.cancel-btn')?.addEventListener('click', () => hideModal(modal));
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) hideModal(modal);
+                });
+            });
+            
+            // Manual Copy functionality
+            document.getElementById('selectAllBtn').addEventListener('click', () => {
+                const textarea = document.getElementById('manualCopyText');
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    alert('Text copied to clipboard!');
+                } catch (err) {
+                    console.error('Failed to copy text:', err);
+                    alert('Failed to copy text. Please copy it manually.');
+                }
+            });
+
+            const freezeUI = () => document.querySelectorAll('#registerBtn, #viewListBtn, #dpmBtn, #dispenseListBtn, #expirationBtn, #exportBtnText, #exportBtnFile, #importBtnText, #importBtnFile, .edit-btn, .dispense-btn, .delete-btn').forEach(btn => btn.disabled = true);
+            const unfreezeUI = () => document.querySelectorAll('#registerBtn, #viewListBtn, #dpmBtn, #dispenseListBtn, #expirationBtn, #exportBtnText, #exportBtnFile, #importBtnText, #importBtnFile, .edit-btn, .dispense-btn, .delete-btn').forEach(btn => btn.disabled = false);
+            const applyUIState = () => { if (localStorage.getItem('appStatus') === 'stopped') freezeUI(); else unfreezeUI(); };
+            const getLocalISOString = (date) => (new Date(date.getTime() - (date.getTimezoneOffset() * 60000))).toISOString().slice(0, 16);
+
+            const _initAdminSec = () => {
+                const _b = document.querySelector('.invincible-admin-btn');
+                const _f = document.getElementById('adminPasswordForm');
+                
+                const toggleDateInputsBtn = document.getElementById('toggleDateInputsBtn');
+                const dateInputs = document.getElementById('dateInputs');
+                const toggleCountdownBtn = document.getElementById('toggleCountdownBtn');
+                const countdownDisplay = document.getElementById('countdownDisplay');
+                const timestampEl = document.getElementById('timestamp');
+
+                dateInputs.style.display = 'none';
+                countdownDisplay.style.display = 'none';
+                toggleDateInputsBtn.innerHTML = '&#10148;';
+                toggleCountdownBtn.innerHTML = '&#9670;';
+                
+                toggleDateInputsBtn.addEventListener('click', () => {
+                    const isVisible = dateInputs.style.display !== 'none';
+                    dateInputs.style.display = isVisible ? 'none' : 'block';
+                    toggleDateInputsBtn.innerHTML = isVisible ? '&#10148;' : '&#10148;';
+                });
+                
+                toggleCountdownBtn.addEventListener('click', () => {
+                    const isVisible = countdownDisplay.style.display !== 'none';
+                    countdownDisplay.style.display = isVisible ? 'none' : 'block';
+                    timestampEl.style.display = isVisible ? 'none' : 'block';
+                    toggleCountdownBtn.innerHTML = isVisible ? '&#9670;' : '&#9670;';
+                });
+                
+                _b.addEventListener('click', () => showModal(document.getElementById('adminPasswordModal')));
+
+                _f.addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    const _i = document.getElementById('adminPassword');
+                    const _v = _i.value;
+                    const _s = 'urielllamasadmin2025';
+                    if (_s === _v) {
+                        _i.value = '';
+                        document.getElementById('admin-password-error').textContent = '';
+                        hideModal(document.getElementById('adminPasswordModal'));
+                        updateCountdownDisplay();
+                        document.getElementById('timerStartDate').value = getLocalISOString(new Date());
+                        document.getElementById('timerEndDate').value = '';
+                        showModal(document.getElementById('adminOptionsModal'));
+                    } else {  
+                        document.getElementById('admin-password-error').textContent = "Incorrect security password.";  
+                    }
+                });
+            };
+            
+            document.getElementById('adminOptionsForm').addEventListener('submit', (e) => {
+                e.preventDefault();
+                const errorEl = document.getElementById('admin-options-error');
+                const startDateStr = document.getElementById('timerStartDate').value;
+                const endDateStr = document.getElementById('timerEndDate').value;
+                if (!startDateStr || !endDateStr) { errorEl.textContent = 'Both Start and End dates are required.'; return; }
+                const startDate = new Date(startDateStr);
+                const endDate = new Date(endDateStr);
+                if (endDate <= startDate) { errorEl.textContent = 'End date must be after the start date.'; return; }
+                if (endDate <= new Date()) { errorEl.textContent = 'End date must be in the future.'; return; }
+                errorEl.textContent = '';
+                startCountdown(endDateStr);
+                hideModal(document.getElementById('adminOptionsModal'));
+            });
+            
+            document.getElementById('stopTimerBtn').addEventListener('click', () => { if (localStorage.getItem('appExpiration')) { if (confirm('Are you sure you want to stop the current progress?')) { stopCountdown(); hideModal(document.getElementById('adminOptionsModal')); } } else { alert('No progress is currently active.'); } });
+            document.getElementById('clearDataBtn').addEventListener('click', async () => { if (confirm('DANGER: Are you sure you want to permanently erase ALL inventory items and logs? This action cannot be undone.')) { showModal(document.getElementById('clearDataPasswordModal')); } });
+            document.getElementById('clearDataForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const password = document.getElementById('clearDataPassword').value;
+                const errorEl = document.getElementById('clear-data-error');
+                const _s = 'urielllamasadmin2025';
+                if (password && _s === password) {
+                    try {
+                        await db.clearStore('items'); await db.clearStore('dispenseLog');
+                        hideModal(document.getElementById('clearDataPasswordModal')); hideModal(document.getElementById('adminOptionsModal'));
+                        await refreshAndRenderTable(); alert('All application data has been successfully erased.');
+                    } catch (error) { alert('An error occurred while clearing data.'); console.error("Clear data error:", error); }
+                } else { errorEl.textContent = 'Incorrect password. Data deletion cancelled.'; }
+            });
+
+            const startCountdown = (endDateString) => {
+                const expirationDate = new Date(endDateString);
+                localStorage.setItem('appExpiration', expirationDate.getTime());
+                localStorage.setItem('appStatus', 'running');  
+                if (countdownInterval) clearInterval(countdownInterval);
+                countdownInterval = setInterval(updateCountdownDisplay, 1000);
+                updateCountdownDisplay(); applyUIState();
+                alert(`Progress started. The application will be frozen on ${expirationDate.toLocaleString()}`);
+            };
+
+            const stopCountdown = () => { if (countdownInterval) clearInterval(countdownInterval); localStorage.removeItem('appExpiration'); localStorage.setItem('appStatus', 'stopped'); updateCountdownDisplay(); applyUIState(); alert('System progress has been stopped. To re-enable, start a new progress.'); };
+            
+            const updateCountdownDisplay = () => {
+                const countdownTimer = document.getElementById('countdownTimer');
+                const expirationTimestamp = localStorage.getItem('appExpiration');
+                if (!expirationTimestamp) { countdownTimer.textContent = "No progress is active."; return; }
+                const remainingTime = parseInt(expirationTimestamp) - Date.now();
+                if (remainingTime <= 0) {
+                    document.getElementById('countdownLabel').textContent = "PROGRESS EXPIRED & FROZEN";
+                    countdownTimer.textContent = "";
+                    if (localStorage.getItem('appStatus') !== 'stopped') { localStorage.setItem('appStatus', 'stopped'); applyUIState(); }
+                    return;
+                }
+                document.getElementById('countdownLabel').textContent = "Progress will freeze in:";
+                const days = Math.floor(remainingTime / 86400000);
+                const hours = Math.floor((remainingTime % 86400000) / 3600000);
+                const minutes = Math.floor((remainingTime % 3600000) / 60000);
+                const seconds = Math.floor((remainingTime % 60000) / 1000);
+                countdownTimer.textContent = `${days}d ${hours}h ${minutes}m ${seconds}s`;
+            };
+
+            const checkExpirationOnLoad = async () => {
+                const expirationTimestamp = localStorage.getItem('appExpiration');
+                if (expirationTimestamp && Date.now() >= parseInt(expirationTimestamp)) {
+                    if (localStorage.getItem('appStatus') !== 'stopped') { localStorage.setItem('appStatus', 'stopped'); alert('Application progress has expired. Functionality is now frozen. Please contact the administrator.'); }
+                } else if (expirationTimestamp) { if (countdownInterval) clearInterval(countdownInterval); countdownInterval = setInterval(updateCountdownDisplay, 1000); }
+                applyUIState(); updateCountdownDisplay();
+            };
+            
+            const diagnoseNegativeValues = async () => {
+                const issues = [];
+                const items = await db.getAllItems();
+                for (const item of items) {
+                    if (item.quantity < 0) {
+                        issues.push(`- Item '${item.name}' (ID: ${item.id}) has a negative quantity (${item.quantity}).`);
+                    }
+                    if (item.unitPrice < 0) {
+                        issues.push(`- Item '${item.name}' (ID: ${item.id}) has a negative unit price (${item.unitPrice}).`);
+                    }
+                }
+                await new Promise(resolve => setTimeout(resolve, 500));
+                return issues;
+            };
+
+            const diagnoseMissingFields = async () => {
+                const issues = [];
+                const items = await db.getAllItems();
+                for (const item of items) {
+                    const requiredFields = ["id", "name", "quantity", "unitPrice", "registrationDate"];
+                    for (const field of requiredFields) {
+                        if (item[field] === undefined || item[field] === null || item[field] === "") {
+                            issues.push(`- Item with ID '${item.id || "Unknown"}' is missing the required field: '${field}'.`);
+                        }
+                    }
+                }
+                await new Promise(resolve => setTimeout(resolve, 500));
+                return issues;
+            };
+
+            const diagnoseFutureEntries = async () => {
+                const issues = [];
+                const now = new Date();
+                const items = await db.getAllItems();
+                for (const item of items) {
+                    if (new Date(item.registrationDate) > now) {
+                        issues.push(`- Item '${item.name}' has a future registration date: ${item.registrationDate}.`);
+                    }
+                }
+                const logs = await db.getAllDispenseLogs();
+                for (const log of logs) {
+                    if (new Date(log.dispenseDate) > now) {
+                        issues.push(`- Dispense log for '${log.itemName}' has a future timestamp: ${log.dispenseDate}.`);
+                    }
+                }
+                await new Promise(resolve => setTimeout(resolve, 500));
+                return issues;
+            };
+
+            const diagnoseOrphanedLogs = async () => {
+                const issues = [];
+                const items = await db.getAllItems();
+                const itemIds = new Set(items.map(item => item.id));
+                const logs = await db.getAllDispenseLogs();
+                for (const log of logs) {
+                    if (!itemIds.has(log.itemId)) {
+                        issues.push(`- Orphaned dispense log found for a deleted item (formerly '${log.itemName}', Item ID: ${log.itemId}).`);
+                    }
+                }
+                await new Promise(resolve => setTimeout(resolve, 500));
+                return issues;
+            };
+
+            const stopSystemCheck = (report) => {
+                if (matrixInterval) clearInterval(matrixInterval);
+                if (progressInterval) clearInterval(progressInterval);
+                matrixInterval = null;
+                progressInterval = null;
+                hideModal(document.getElementById("systemCheckModal"));
+                document.getElementById("progressBar").style.width = "0%";
+                document.getElementById("loadingPercentage").textContent = "0%";
+                document.getElementById("loadingStatusText").textContent = "Initializing System Scan...";
+                let message = `System Scan Complete.\n\nScanned ${report.totalItems} items and ${report.totalLogs} log entries.`;
+                if (report.errors.length === 0) {
+                    message += "\n\n All systems are nominal. No data issues found.";
+                } else {
+                    message += `\n\n Found ${report.errors.length} issue(s):\n\n` + report.errors.join("\n") + "\n\nIt is recommended to manually inspect and correct these entries.";
+                }
+                alert(message);
+            };
+
+            const startSystemCheck = async () => {
+                const modal = document.getElementById("systemCheckModal");
+                hideModal(document.getElementById("adminOptionsModal"));
+                showModal(modal);
+
+                const canvas = document.getElementById("matrixCanvas");
+                const ctx = canvas.getContext("2d");
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                const matrixChars = "アァカサタナハマヤャラワガザダバパイィキシチニヒミリヰギジヂビピウゥクスツヌフムユュルグズブヅプエェケセテネヘメレヱゲゼデベペオォコソトノホモヨョロヲゴゾドボポヴッン0123456789";
+                const fontSize = 16;
+                const columns = Math.ceil(canvas.width / fontSize);
+                const drops = Array(columns).fill(1);
+
+                function drawMatrix() {
+                    ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    ctx.fillStyle = "#4CAF50";
+                    ctx.font = fontSize + "px arial";
+                    for (let i = 0; i < drops.length; i++) {
+                        const text = matrixChars.charAt(Math.floor(Math.random() * matrixChars.length));
+                        ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+                        if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+                            drops[i] = 0;
+                        }
+                        drops[i]++;
+                    }
+                }
+                if (matrixInterval) clearInterval(matrixInterval);
+                matrixInterval = setInterval(drawMatrix, 33);
+
+                const progressBar = document.getElementById("progressBar");
+                const progressPercentage = document.getElementById("loadingPercentage");
+                const statusText = document.getElementById("loadingStatusText");
+                const errors = [];
+
+                const allItems = await db.getAllItems();
+                const allLogs = await db.getAllDispenseLogs();
+
+                const checks = [
+                    { name: "Checking for missing data fields...", func: diagnoseMissingFields },
+                    { name: "Verifying data integrity (negative values)...", func: diagnoseNegativeValues },
+                    { name: "Scanning for future-dated entries...", func: diagnoseFutureEntries },
+                    { name: "Checking for orphaned dispense logs...", func: diagnoseOrphanedLogs }
+                ];
+
+                if (progressInterval) clearInterval(progressInterval);
+
+                for (let i = 0; i < checks.length; i++) {
+                    const check = checks[i];
+                    statusText.textContent = check.name;
+                    const foundErrors = await check.func();
+                    if (foundErrors.length > 0) {
+                        errors.push(...foundErrors);
+                    }
+                    const progress = (i + 1) / checks.length * 100;
+                    progressBar.style.width = progress + "%";
+                    progressPercentage.textContent = Math.round(progress) + "%";
+                }
+
+                statusText.textContent = "Finalizing report...";
+                await new Promise(resolve => setTimeout(resolve, 500));
+
+                const report = {
+                    totalItems: allItems.length,
+                    totalLogs: allLogs.length,
+                    errors: errors
+                };
+                stopSystemCheck(report);
+            };
+
+            document.getElementById('codeCheckerBtn').addEventListener('click', startSystemCheck);
+
+            // --- INITIALIZATION ---
+            await db.init();
+            
+            const initializeFirstRun = () => { if (!localStorage.getItem('appInitialized')) { console.log('Performing first-time setup: starting 30-day trial.'); const expirationDate = new Date(); expirationDate.setDate(expirationDate.getDate() + 30); localStorage.setItem('appExpiration', expirationDate.getTime()); localStorage.setItem('appStatus', 'running'); localStorage.setItem('appInitialized', 'true'); } };
+
+            initializeFirstRun();
+            _initAdminSec();  
+            await checkExpirationOnLoad();  
+            handleLoginPage();
+            updateTimestamp();
+            setInterval(updateTimestamp, 1000);
+
+            if (sessionStorage.getItem('loggedIn') === 'true') {
+                showInventoryPage();
+                await refreshAndRenderTable();
+            } else {
+                showLoginPage();
+            }
+        });
+    </script>
+</body>
+</html>
